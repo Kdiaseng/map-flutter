@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map_app/views/home_page.dart';
+import 'package:flutter_map_app/views/maps_demo.dart';
 
 import 'views/home_view.dart';
 
