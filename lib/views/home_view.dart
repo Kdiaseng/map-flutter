@@ -80,8 +80,8 @@ class _HomeViewState extends State<HomeView> {
       body: SafeArea(
         child: Stack(children: [
           _getGoogleMaps(context),
-          _searchPlace(),
-          _parkingListContainer()
+          _parkingListContainer(),
+          _searchPlace()
         ]),
       ),
     );
@@ -91,19 +91,12 @@ class _HomeViewState extends State<HomeView> {
     return Align(
       alignment: Alignment.topCenter,
       child: SearchMapPlaceWidget(
+        radius: 30000,
+        placeholder: "Digite o endereço",
         apiKey: "AIzaSyCULCZ4hkchX9u0sggf5LCwZ2oOTAcM10s",
         language: 'pt-BR',
         placeType: PlaceType.address,
         location: LatLng(-3.006669087006096, -60.036741948623686),
-        radius: 30000,
-        onSearch: (Place place) async {
-          final geolocation = await place.geolocation;
-          final GoogleMapController controller = await _controller.future;
-          controller
-              .animateCamera(CameraUpdate.newLatLng(geolocation.coordinates));
-          controller.animateCamera(
-              CameraUpdate.newLatLngBounds(geolocation.bounds, 0));
-        },
         onSelected: (Place place) async {
           final geolocation = await place.geolocation;
           final GoogleMapController controller = await _controller.future;
