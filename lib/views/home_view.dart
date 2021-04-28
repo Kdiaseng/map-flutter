@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rating_bar/rating_bar.dart';
@@ -12,6 +14,7 @@ class _HomeViewState extends State<HomeView> {
   BitmapDescriptor mapMarker;
   BitmapDescriptor mapMarkerUnavailable;
   BitmapDescriptor mapMarkerThree;
+  Completer<GoogleMapController> _controller = Completer();
 
   @override
   void initState() {
@@ -21,32 +24,33 @@ class _HomeViewState extends State<HomeView> {
 
   void setCustomMarker() async {
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(size: Size(72, 72)), 'assets/available.png')
+            ImageConfiguration(size: Size(48, 48)), 'assets/available.png')
         .then((onValue) {
       mapMarker = onValue;
     });
 
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(size: Size(72, 72)), 'assets/available.png')
+            ImageConfiguration(size: Size(48, 48)), 'assets/available.png')
         .then((onValue) {
       mapMarkerThree = onValue;
     });
 
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(size: Size(72, 72)), 'assets/unavailable.png')
+            ImageConfiguration(size: Size(48, 48)), 'assets/unavailable.png')
         .then((onValue) {
       mapMarkerUnavailable = onValue;
     });
   }
 
   void _onMapCreated(GoogleMapController controller) {
+    _controller.complete(controller);
     setState(() {
       _markers.add(
         Marker(
             markerId: MarkerId("id-1"),
             position: LatLng(-3.006669087006096, -60.036741948623686),
             infoWindow: InfoWindow(
-                title: "NEXT MY HOUSE", snippet: "TARUMA MANAUS TOP CENTER"),
+                title: "Parking One", snippet: "TARUMA MANAUS TOP CENTER"),
             icon: mapMarker),
       );
       _markers.add(
@@ -54,7 +58,7 @@ class _HomeViewState extends State<HomeView> {
             markerId: MarkerId("id-2"),
             position: LatLng(-3.003152497680512, -60.0288825221795),
             infoWindow:
-                InfoWindow(title: "ESTACIONAMENTO", snippet: "VENHA QUE É TOP"),
+                InfoWindow(title: "Parking two", snippet: "VENHA QUE É TOP"),
             icon: mapMarkerUnavailable),
       );
 
@@ -63,7 +67,7 @@ class _HomeViewState extends State<HomeView> {
             markerId: MarkerId("id-3"),
             position: LatLng(-3.0107769937230198, -60.032253593350944),
             infoWindow: InfoWindow(
-                title: "ESTACIONAMENTO TOP LINHA", snippet: "MELHOR DA CIDADE"),
+                title: "Parking Three", snippet: "MELHOR DA CIDADE"),
             icon: mapMarkerThree),
       );
     });
@@ -90,7 +94,7 @@ class _HomeViewState extends State<HomeView> {
         myLocationButtonEnabled: true,
         zoomControlsEnabled: false,
         initialCameraPosition: CameraPosition(
-            target: LatLng(-2.9962554022094388, -60.02916501383111), zoom: 15),
+            target: LatLng(-3.006669087006096, -60.036741948623686), zoom: 15),
       ),
     );
   }
@@ -114,13 +118,13 @@ class _HomeViewState extends State<HomeView> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: _parkingBox(
-                  -3.006669087006096, -60.036741948623686, "Parking two"),
+                  -3.003152497680512, -60.0288825221795, "Parking two"),
             ),
             SizedBox(width: 10.0),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: _parkingBox(
-                  -3.006669087006096, -60.036741948623686, "Parking three"),
+                  -3.0107769937230198, -60.032253593350944, "Parking three"),
             ),
           ],
         ),
@@ -130,7 +134,9 @@ class _HomeViewState extends State<HomeView> {
 
   Widget _parkingBox(double lat, double long, String parkingName) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        _gotoLocation(lat, long);
+      },
       child: Container(
         child: FittedBox(
           child: Material(
@@ -290,5 +296,11 @@ class _HomeViewState extends State<HomeView> {
         ),
       ),
     );
+  }
+
+  Future<void> _gotoLocation(double lat, double long) async {
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition((CameraPosition(
+        target: LatLng(lat, long), zoom: 15, tilt: 50, bearing: 45))));
   }
 }
