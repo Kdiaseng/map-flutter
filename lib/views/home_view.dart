@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rating_bar/rating_bar.dart';
+import 'package:search_map_place/search_map_place.dart';
 
 class HomeView extends StatefulWidget {
   @override
@@ -66,8 +67,8 @@ class _HomeViewState extends State<HomeView> {
         Marker(
             markerId: MarkerId("id-3"),
             position: LatLng(-3.0107769937230198, -60.032253593350944),
-            infoWindow: InfoWindow(
-                title: "Parking Three", snippet: "MELHOR DA CIDADE"),
+            infoWindow:
+                InfoWindow(title: "Parking Three", snippet: "MELHOR DA CIDADE"),
             icon: mapMarkerThree),
       );
     });
@@ -76,10 +77,42 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Google Map"),
+      body: SafeArea(
+        child: Stack(children: [
+          _getGoogleMaps(context),
+          _searchPlace(),
+          _parkingListContainer()
+        ]),
       ),
-      body: Stack(children: [_getGoogleMaps(context), _parkingListContainer()]),
+    );
+  }
+
+  Widget _searchPlace() {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SearchMapPlaceWidget(
+        apiKey: "AIzaSyCULCZ4hkchX9u0sggf5LCwZ2oOTAcM10s",
+        language: 'pt-BR',
+        placeType: PlaceType.address,
+        location: LatLng(-3.006669087006096, -60.036741948623686),
+        radius: 30000,
+        onSearch: (Place place) async {
+          final geolocation = await place.geolocation;
+          final GoogleMapController controller = await _controller.future;
+          controller
+              .animateCamera(CameraUpdate.newLatLng(geolocation.coordinates));
+          controller.animateCamera(
+              CameraUpdate.newLatLngBounds(geolocation.bounds, 0));
+        },
+        onSelected: (Place place) async {
+          final geolocation = await place.geolocation;
+          final GoogleMapController controller = await _controller.future;
+          controller
+              .animateCamera(CameraUpdate.newLatLng(geolocation.coordinates));
+          controller.animateCamera(
+              CameraUpdate.newLatLngBounds(geolocation.bounds, 0));
+        },
+      ),
     );
   }
 
@@ -153,7 +186,7 @@ class _HomeViewState extends State<HomeView> {
                     style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16.0),
+                        fontSize: 21.0),
                   ),
                   Container(
                     child: Row(
@@ -164,10 +197,10 @@ class _HomeViewState extends State<HomeView> {
                           children: [
                             Text("Largo de São Sebastião - Centro,",
                                 style: TextStyle(
-                                    color: Colors.black54, fontSize: 12)),
+                                    color: Colors.black54, fontSize: 16)),
                             Text("Manaus - AM, 69067-080",
                                 style: TextStyle(
-                                    color: Colors.black54, fontSize: 12))
+                                    color: Colors.black54, fontSize: 16))
                           ],
                         ),
                         IconButton(
@@ -186,7 +219,7 @@ class _HomeViewState extends State<HomeView> {
                               "Pagamento",
                               style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 12,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold),
                             ),
                             Row(
@@ -206,7 +239,7 @@ class _HomeViewState extends State<HomeView> {
                               "Veículos",
                               style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 12,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold),
                             ),
                             Row(
@@ -228,14 +261,14 @@ class _HomeViewState extends State<HomeView> {
                               "Vagas",
                               style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 12,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold),
                             ),
                             Text(
                               "36",
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 12,
+                                fontSize: 16,
                               ),
                             ),
                           ],
@@ -251,13 +284,13 @@ class _HomeViewState extends State<HomeView> {
                         Text("600 M",
                             style: TextStyle(
                                 color: Color(0xFF23CB7E),
-                                fontSize: 16,
+                                fontSize: 21,
                                 fontWeight: FontWeight.bold)),
                         SizedBox(width: 11),
                         Text("4.5",
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 12,
+                              fontSize: 16,
                             )),
                         SizedBox(width: 5),
                         RatingBar.readOnly(
@@ -267,7 +300,7 @@ class _HomeViewState extends State<HomeView> {
                           filledIcon: Icons.star,
                           filledColor: Color(0xFF23CB7E),
                           emptyIcon: Icons.star_border,
-                          size: 12,
+                          size: 16,
                         ),
                         SizedBox(width: 34),
                         Column(
@@ -276,13 +309,13 @@ class _HomeViewState extends State<HomeView> {
                             Text("R\$ 100,00 ",
                                 style: TextStyle(
                                     color: Color(0xFF23CB7E),
-                                    fontSize: 16,
+                                    fontSize: 21,
                                     fontWeight: FontWeight.bold)),
                             SizedBox(height: 3),
                             Text("Por dia: 1 dia",
                                 style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 12,
+                                  fontSize: 16,
                                 )),
                           ],
                         )
