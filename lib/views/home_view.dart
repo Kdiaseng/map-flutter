@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map_app/models/parking.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rating_bar/rating_bar.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:search_map_place/search_map_place.dart';
 
 class HomeView extends StatefulWidget {
@@ -11,16 +13,37 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  List<Parking> parkingLots = <Parking>[];
+
   Set<Marker> _markers = {};
   BitmapDescriptor mapMarker;
   BitmapDescriptor mapMarkerUnavailable;
   BitmapDescriptor mapMarkerThree;
   Completer<GoogleMapController> _controller = Completer();
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
 
   @override
   void initState() {
     super.initState();
+    _loadParkingLots();
     setCustomMarker();
+  }
+
+  _loadParkingLots() {
+    parkingLots
+        .add(Parking(-3.006669087006096, -60.036741948623686, "Parking One"));
+    parkingLots
+        .add(Parking(-3.003152497680512, -60.0288825221795, "Parking two"));
+    parkingLots.add(
+        Parking(-3.0107769937230198, -60.032253593350944, "Parking three"));
+    parkingLots.add(
+        Parking(-3.0107769937230198, -60.032253593350944, "Parking three"));
+    parkingLots.add(
+        Parking(-3.0107769937230198, -60.032253593350944, "Parking three"));
+    parkingLots.add(
+        Parking(-3.0107769937230198, -60.032253593350944, "Parking three"));
   }
 
   void setCustomMarker() async {
@@ -77,14 +100,28 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.favorite_border),
+        onPressed: () {
+          _selectedItem(5);
+        },
+      ),
       body: SafeArea(
         child: Stack(children: [
           _getGoogleMaps(context),
-          _parkingListContainer(),
+          _parkingLots(context),
+          // _parkingListContainer(),
           _searchPlace()
         ]),
       ),
     );
+  }
+
+  _selectedItem(index) {
+    itemScrollController.scrollTo(
+        index: index,
+        duration: Duration(seconds: 2),
+        curve: Curves.easeInOutCubic);
   }
 
   Widget _searchPlace() {
@@ -125,6 +162,24 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  Widget _parkingLots(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomLeft,
+      child: Container(
+        margin:EdgeInsets.symmetric(vertical: 20.0),
+        height: 200,
+        child: ScrollablePositionedList.builder(
+          itemCount: parkingLots.length,
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (context, index) => _parkingBox(parkingLots[index].lat,
+              parkingLots[index].log, parkingLots[index].name),
+          itemScrollController: itemScrollController,
+          itemPositionsListener: itemPositionsListener,
+        ),
+      ),
+    );
+  }
+
   Widget _parkingListContainer() {
     return Align(
       alignment: Alignment.bottomLeft,
@@ -134,24 +189,15 @@ class _HomeViewState extends State<HomeView> {
         child: ListView(
           scrollDirection: Axis.horizontal,
           children: [
-            SizedBox(width: 10.0),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _parkingBox(
-                  -3.006669087006096, -60.036741948623686, "Parking One"),
-            ),
-            SizedBox(width: 10.0),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _parkingBox(
-                  -3.003152497680512, -60.0288825221795, "Parking two"),
-            ),
-            SizedBox(width: 10.0),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _parkingBox(
-                  -3.0107769937230198, -60.032253593350944, "Parking three"),
-            ),
+
+            _parkingBox(
+                -3.006669087006096, -60.036741948623686, "Parking One"),
+
+            _parkingBox(
+                -3.003152497680512, -60.0288825221795, "Parking two"),
+
+            _parkingBox(
+                -3.0107769937230198, -60.032253593350944, "Parking three"),
           ],
         ),
       ),
@@ -163,162 +209,170 @@ class _HomeViewState extends State<HomeView> {
       onTap: () {
         _gotoLocation(lat, long);
       },
-      child: Container(
-        child: FittedBox(
-          child: Material(
-            color: Colors.white,
-            elevation: 14.0,
-            borderRadius: BorderRadius.circular(10.0),
-            child: Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    parkingName,
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 21.0),
-                  ),
-                  Container(
-                    child: Row(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            SizedBox(width: 10.0),
+            Container(
+              child: FittedBox(
+                child: Material(
+                  color: Colors.white,
+                  elevation: 14.0,
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.room_outlined),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Largo de São Sebastião - Centro,",
-                                style: TextStyle(
-                                    color: Colors.black54, fontSize: 16)),
-                            Text("Manaus - AM, 69067-080",
-                                style: TextStyle(
-                                    color: Colors.black54, fontSize: 16))
-                          ],
-                        ),
-                        IconButton(
-                            icon: Icon(Icons.favorite_border), onPressed: () {})
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 19.0),
-                  Container(
-                    child: Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Pagamento",
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Row(
-                              children: [
-                                Icon(Icons.credit_card_outlined),
-                                SizedBox(width: 3.0),
-                                Icon(Icons.payments_outlined)
-                              ],
-                            )
-                          ],
-                        ),
-                        SizedBox(width: 32.0),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Veículos",
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Row(
-                              children: [
-                                Icon(Icons.drive_eta),
-                                SizedBox(width: 3.0),
-                                Icon(Icons.local_shipping),
-                                SizedBox(width: 3.0),
-                                Icon(Icons.two_wheeler)
-                              ],
-                            )
-                          ],
-                        ),
-                        SizedBox(width: 32.0),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Vagas",
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              "36",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 23.0),
-                  Container(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text("600 M",
-                            style: TextStyle(
-                                color: Color(0xFF23CB7E),
-                                fontSize: 21,
-                                fontWeight: FontWeight.bold)),
-                        SizedBox(width: 11),
-                        Text("4.5",
-                            style: TextStyle(
+                        Text(
+                          parkingName,
+                          style: TextStyle(
                               color: Colors.black,
-                              fontSize: 16,
-                            )),
-                        SizedBox(width: 5),
-                        RatingBar.readOnly(
-                          initialRating: 4.5,
-                          isHalfAllowed: true,
-                          halfFilledIcon: Icons.star_half,
-                          filledIcon: Icons.star,
-                          filledColor: Color(0xFF23CB7E),
-                          emptyIcon: Icons.star_border,
-                          size: 16,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 21.0),
                         ),
-                        SizedBox(width: 34),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("R\$ 100,00 ",
-                                style: TextStyle(
-                                    color: Color(0xFF23CB7E),
-                                    fontSize: 21,
-                                    fontWeight: FontWeight.bold)),
-                            SizedBox(height: 3),
-                            Text("Por dia: 1 dia",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                )),
-                          ],
+                        Container(
+                          child: Row(
+                            children: [
+                              Icon(Icons.room_outlined),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Largo de São Sebastião - Centro,",
+                                      style: TextStyle(
+                                          color: Colors.black54, fontSize: 16)),
+                                  Text("Manaus - AM, 69067-080",
+                                      style: TextStyle(
+                                          color: Colors.black54, fontSize: 16))
+                                ],
+                              ),
+                              IconButton(
+                                  icon: Icon(Icons.favorite_border), onPressed: () {})
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 19.0),
+                        Container(
+                          child: Row(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Pagamento",
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.credit_card_outlined),
+                                      SizedBox(width: 3.0),
+                                      Icon(Icons.payments_outlined)
+                                    ],
+                                  )
+                                ],
+                              ),
+                              SizedBox(width: 32.0),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Veículos",
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.drive_eta),
+                                      SizedBox(width: 3.0),
+                                      Icon(Icons.local_shipping),
+                                      SizedBox(width: 3.0),
+                                      Icon(Icons.two_wheeler)
+                                    ],
+                                  )
+                                ],
+                              ),
+                              SizedBox(width: 32.0),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Vagas",
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    "36",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 23.0),
+                        Container(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text("600 M",
+                                  style: TextStyle(
+                                      color: Color(0xFF23CB7E),
+                                      fontSize: 21,
+                                      fontWeight: FontWeight.bold)),
+                              SizedBox(width: 11),
+                              Text("4.5",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                  )),
+                              SizedBox(width: 5),
+                              RatingBar.readOnly(
+                                initialRating: 4.5,
+                                isHalfAllowed: true,
+                                halfFilledIcon: Icons.star_half,
+                                filledIcon: Icons.star,
+                                filledColor: Color(0xFF23CB7E),
+                                emptyIcon: Icons.star_border,
+                                size: 16,
+                              ),
+                              SizedBox(width: 34),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("R\$ 100,00 ",
+                                      style: TextStyle(
+                                          color: Color(0xFF23CB7E),
+                                          fontSize: 21,
+                                          fontWeight: FontWeight.bold)),
+                                  SizedBox(height: 3),
+                                  Text("Por dia: 1 dia",
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                      )),
+                                ],
+                              )
+                            ],
+                          ),
                         )
                       ],
                     ),
-                  )
-                ],
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
