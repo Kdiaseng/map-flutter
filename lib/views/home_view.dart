@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map_app/models/parking.dart';
+import 'package:flutter_map_app/controllers/home_controller.dart';
+import 'package:flutter_map_app/models/parking_model.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rating_bar/rating_bar.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -13,7 +14,8 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  List<Parking> parkingLots = <Parking>[];
+  List<ParkingModel> parkingLots = <ParkingModel>[];
+  final homeController = HomeController();
 
   Set<Marker> _markers = {};
   BitmapDescriptor mapMarker;
@@ -31,13 +33,42 @@ class _HomeViewState extends State<HomeView> {
     setCustomMarker();
   }
 
+  _start() {
+    return Container();
+  }
+
+  _loading() {
+    return Center(child: CircularProgressIndicator());
+  }
+
+  _error() {
+    return Center(
+      child: ElevatedButton(
+        onPressed: () {
+          homeController.getParkingLots();
+        },
+        child: Text('Tentar novamente'),
+      ),
+    );
+  }
+
+  stateManagement(HomeState state) {
+    switch (state) {
+      case HomeState.start:
+        return _start();
+      case HomeState.loading:
+        return _loading();
+      case HomeState.error:
+        return _error();
+      case HomeState.success:
+        return _parkingLots(context);
+        break;
+      default:
+    }
+  }
+
   _loadParkingLots() {
-    parkingLots.add(
-        Parking(-3.006669087006096, -60.036741948623686, "Parking One", 1));
-    parkingLots
-        .add(Parking(-3.003152497680512, -60.0288825221795, "Parking two", 2));
-    parkingLots.add(
-        Parking(-3.0107769937230198, -60.032253593350944, "Parking three", 3));
+    homeController.getParkingLots();
   }
 
   void setCustomMarker() async {
@@ -106,8 +137,11 @@ class _HomeViewState extends State<HomeView> {
       body: SafeArea(
         child: Stack(children: [
           _getGoogleMaps(context),
-          _parkingLots(context),
-          // _parkingListContainer(),
+          AnimatedBuilder(
+            animation: homeController.state,
+            builder: (context, child) =>
+                stateManagement(homeController.state.value),
+          ),
           _searchPlace()
         ]),
       ),
@@ -167,10 +201,11 @@ class _HomeViewState extends State<HomeView> {
         margin: EdgeInsets.symmetric(vertical: 20.0),
         height: 200,
         child: ScrollablePositionedList.builder(
-          itemCount: parkingLots.length,
+          itemCount: homeController.parkingLots.length,
           scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) => _parkingBox(parkingLots[index].lat,
-              parkingLots[index].log, parkingLots[index].name),
+          itemBuilder: (context, index) => _parkingBox(
+            homeController.parkingLots[index],
+          ),
           itemScrollController: itemScrollController,
           itemPositionsListener: itemPositionsListener,
         ),
@@ -178,35 +213,16 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _parkingListContainer() {
-    return Align(
-      alignment: Alignment.bottomLeft,
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: 20.0),
-        height: 200,
-        child: ListView(
-          scrollDirection: Axis.horizontal,
-          children: [
-            _parkingBox(-3.006669087006096, -60.036741948623686, "Parking One"),
-            _parkingBox(-3.003152497680512, -60.0288825221795, "Parking two"),
-            _parkingBox(
-                -3.0107769937230198, -60.032253593350944, "Parking three"),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _parkingBox(double lat, double long, String parkingName) {
+  Widget _parkingBox(ParkingModel parking) {
     return GestureDetector(
       onTap: () {
-        _gotoLocation(lat, long);
+        _gotoLocation(parking.latitude, parking.longitude);
       },
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(10.0),
         child: Row(
           children: [
-            SizedBox(width: 10.0),
+            SizedBox(width: 8.0),
             Container(
               child: FittedBox(
                 child: Material(
@@ -219,7 +235,9 @@ class _HomeViewState extends State<HomeView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          parkingName,
+                          parking.nameFantasia != null
+                              ? parking.nameFantasia
+                              : "---",
                           style: TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
@@ -232,7 +250,7 @@ class _HomeViewState extends State<HomeView> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Largo de São Sebastião - Centro,",
+                                  Text("Largo de São Sebatião",
                                       style: TextStyle(
                                           color: Colors.black54, fontSize: 16)),
                                   Text("Manaus - AM, 69067-080",
@@ -303,7 +321,7 @@ class _HomeViewState extends State<HomeView> {
                                         fontWeight: FontWeight.bold),
                                   ),
                                   Text(
-                                    "36",
+                                    parking.qtdVagasDisponivel.toString(),
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontSize: 16,
