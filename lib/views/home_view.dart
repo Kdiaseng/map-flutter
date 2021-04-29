@@ -244,18 +244,34 @@ class _HomeViewState extends State<HomeView> {
                               fontSize: 21.0),
                         ),
                         Container(
+                          width: 315,
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(Icons.room_outlined),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
                                 children: [
-                                  Text("Largo de São Sebatião",
-                                      style: TextStyle(
-                                          color: Colors.black54, fontSize: 16)),
-                                  Text("Manaus - AM, 69067-080",
-                                      style: TextStyle(
-                                          color: Colors.black54, fontSize: 16))
+                                  Icon(Icons.room_outlined),
+                                  SizedBox(width: 5),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          parking.address.street != null
+                                              ? parking.address.street
+                                              : "----",
+                                          style: TextStyle(
+                                              color: Colors.black54,
+                                              fontSize: 16)),
+                                      Text(
+                                          parking.address.city != null
+                                              ? "${parking.address.city} - ${parking.address.state}, 69067-080"
+                                              : "----",
+                                          style: TextStyle(
+                                              color: Colors.black54,
+                                              fontSize: 16))
+                                    ],
+                                  ),
                                 ],
                               ),
                               IconButton(

@@ -1,3 +1,5 @@
+import 'address_model.dart';
+
 class ParkingModel {
   int id;
   double longitude;
@@ -7,7 +9,8 @@ class ParkingModel {
   int qtdVagas;
   int qtdVagasDisponivel;
 
-  // AddressModel address;
+  AddressModel address;
+
   // Payment paymentForm;
 
   ParkingModel(
@@ -25,6 +28,10 @@ class ParkingModel {
     nameFantasia = json['nameFantasia'];
     qtdVagas = json['qtdVagas'];
     qtdVagasDisponivel = json['qtdVagasDisponivel'];
+
+    address = json['address'] != null
+        ? AddressModel.fromJson(json['address'])
+        : AddressModel();
   }
 
   Map<String, dynamic> toJson() {
