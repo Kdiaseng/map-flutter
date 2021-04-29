@@ -14,13 +14,10 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  List<ParkingModel> parkingLots = <ParkingModel>[];
   final homeController = HomeController();
 
   Set<Marker> _markers = {};
   BitmapDescriptor mapMarker;
-  BitmapDescriptor mapMarkerUnavailable;
-  BitmapDescriptor mapMarkerThree;
   Completer<GoogleMapController> _controller = Completer();
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
@@ -61,7 +58,13 @@ class _HomeViewState extends State<HomeView> {
       case HomeState.error:
         return _error();
       case HomeState.success:
-        return _parkingLots(context);
+        return Stack(
+          children: [
+            _getGoogleMaps(context),
+            _parkingLots(context),
+            _searchPlace()
+          ],
+        );
         break;
       default:
     }
@@ -71,63 +74,38 @@ class _HomeViewState extends State<HomeView> {
     homeController.getParkingLots();
   }
 
+  _loadMarker() {
+    homeController.parkingLots.forEach((parking) {
+      _markers.add(
+        Marker(
+            onTap: (){
+              _selectedItem(parking.id);
+            },
+            markerId: MarkerId(parking.id.toString()),
+            position: LatLng(
+                parking.latitude != null
+                    ? parking.latitude
+                    : -3.006669087006096,
+                parking.longitude != null
+                    ? parking.longitude
+                    : -60.036741948623686),
+            icon: mapMarker),
+      );
+    });
+  }
+
   void setCustomMarker() async {
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(size: Size(48, 48)), 'assets/available.png')
         .then((onValue) {
       mapMarker = onValue;
     });
-
-    BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(size: Size(48, 48)), 'assets/available.png')
-        .then((onValue) {
-      mapMarkerThree = onValue;
-    });
-
-    BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(size: Size(48, 48)), 'assets/unavailable.png')
-        .then((onValue) {
-      mapMarkerUnavailable = onValue;
-    });
   }
 
   void _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
     setState(() {
-      _markers.add(
-        Marker(
-            onTap: () {
-              _selectedItem(1);
-            },
-            markerId: MarkerId("id-1"),
-            position: LatLng(-3.006669087006096, -60.036741948623686),
-            infoWindow: InfoWindow(
-                title: "Parking One", snippet: "TARUMA MANAUS TOP CENTER"),
-            icon: mapMarker),
-      );
-      _markers.add(
-        Marker(
-            onTap: () {
-              _selectedItem(2);
-            },
-            markerId: MarkerId("id-2"),
-            position: LatLng(-3.003152497680512, -60.0288825221795),
-            infoWindow:
-                InfoWindow(title: "Parking two", snippet: "VENHA QUE É TOP"),
-            icon: mapMarkerUnavailable),
-      );
-
-      _markers.add(
-        Marker(
-            onTap: () {
-              _selectedItem(3);
-            },
-            markerId: MarkerId("id-3"),
-            position: LatLng(-3.0107769937230198, -60.032253593350944),
-            infoWindow:
-                InfoWindow(title: "Parking Three", snippet: "MELHOR DA CIDADE"),
-            icon: mapMarkerThree),
-      );
+      _loadMarker();
     });
   }
 
@@ -135,21 +113,18 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Stack(children: [
-          _getGoogleMaps(context),
-          AnimatedBuilder(
-            animation: homeController.state,
-            builder: (context, child) =>
-                stateManagement(homeController.state.value),
-          ),
-          _searchPlace()
-        ]),
+        child: AnimatedBuilder(
+          animation: homeController.state,
+          builder: (context, child) =>
+              stateManagement(homeController.state.value),
+        ),
       ),
     );
   }
 
   _selectedItem(int id) {
-    var index = parkingLots.indexWhere((element) => element.id == id);
+    var index =
+        homeController.parkingLots.indexWhere((element) => element.id == id);
     itemScrollController.scrollTo(
         index: index,
         duration: Duration(seconds: 2),
@@ -216,7 +191,9 @@ class _HomeViewState extends State<HomeView> {
   Widget _parkingBox(ParkingModel parking) {
     return GestureDetector(
       onTap: () {
-        _gotoLocation(parking.latitude, parking.longitude);
+        if (parking.longitude != null && parking.latitude != null) {
+          _gotoLocation(parking.latitude, parking.longitude);
+        }
       },
       child: Padding(
         padding: const EdgeInsets.all(10.0),
