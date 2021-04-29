@@ -32,18 +32,12 @@ class _HomeViewState extends State<HomeView> {
   }
 
   _loadParkingLots() {
+    parkingLots.add(
+        Parking(-3.006669087006096, -60.036741948623686, "Parking One", 1));
     parkingLots
-        .add(Parking(-3.006669087006096, -60.036741948623686, "Parking One"));
-    parkingLots
-        .add(Parking(-3.003152497680512, -60.0288825221795, "Parking two"));
+        .add(Parking(-3.003152497680512, -60.0288825221795, "Parking two", 2));
     parkingLots.add(
-        Parking(-3.0107769937230198, -60.032253593350944, "Parking three"));
-    parkingLots.add(
-        Parking(-3.0107769937230198, -60.032253593350944, "Parking three"));
-    parkingLots.add(
-        Parking(-3.0107769937230198, -60.032253593350944, "Parking three"));
-    parkingLots.add(
-        Parking(-3.0107769937230198, -60.032253593350944, "Parking three"));
+        Parking(-3.0107769937230198, -60.032253593350944, "Parking three", 3));
   }
 
   void setCustomMarker() async {
@@ -71,6 +65,9 @@ class _HomeViewState extends State<HomeView> {
     setState(() {
       _markers.add(
         Marker(
+            onTap: () {
+              _selectedItem(1);
+            },
             markerId: MarkerId("id-1"),
             position: LatLng(-3.006669087006096, -60.036741948623686),
             infoWindow: InfoWindow(
@@ -79,6 +76,9 @@ class _HomeViewState extends State<HomeView> {
       );
       _markers.add(
         Marker(
+            onTap: () {
+              _selectedItem(2);
+            },
             markerId: MarkerId("id-2"),
             position: LatLng(-3.003152497680512, -60.0288825221795),
             infoWindow:
@@ -88,6 +88,9 @@ class _HomeViewState extends State<HomeView> {
 
       _markers.add(
         Marker(
+            onTap: () {
+              _selectedItem(3);
+            },
             markerId: MarkerId("id-3"),
             position: LatLng(-3.0107769937230198, -60.032253593350944),
             infoWindow:
@@ -100,12 +103,6 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.favorite_border),
-        onPressed: () {
-          _selectedItem(5);
-        },
-      ),
       body: SafeArea(
         child: Stack(children: [
           _getGoogleMaps(context),
@@ -117,7 +114,8 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  _selectedItem(index) {
+  _selectedItem(int id) {
+    var index = parkingLots.indexWhere((element) => element.id == id);
     itemScrollController.scrollTo(
         index: index,
         duration: Duration(seconds: 2),
@@ -166,7 +164,7 @@ class _HomeViewState extends State<HomeView> {
     return Align(
       alignment: Alignment.bottomLeft,
       child: Container(
-        margin:EdgeInsets.symmetric(vertical: 20.0),
+        margin: EdgeInsets.symmetric(vertical: 20.0),
         height: 200,
         child: ScrollablePositionedList.builder(
           itemCount: parkingLots.length,
@@ -189,13 +187,8 @@ class _HomeViewState extends State<HomeView> {
         child: ListView(
           scrollDirection: Axis.horizontal,
           children: [
-
-            _parkingBox(
-                -3.006669087006096, -60.036741948623686, "Parking One"),
-
-            _parkingBox(
-                -3.003152497680512, -60.0288825221795, "Parking two"),
-
+            _parkingBox(-3.006669087006096, -60.036741948623686, "Parking One"),
+            _parkingBox(-3.003152497680512, -60.0288825221795, "Parking two"),
             _parkingBox(
                 -3.0107769937230198, -60.032253593350944, "Parking three"),
           ],
@@ -248,7 +241,8 @@ class _HomeViewState extends State<HomeView> {
                                 ],
                               ),
                               IconButton(
-                                  icon: Icon(Icons.favorite_border), onPressed: () {})
+                                  icon: Icon(Icons.favorite_border),
+                                  onPressed: () {})
                             ],
                           ),
                         ),
