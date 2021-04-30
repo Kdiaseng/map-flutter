@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map_app/controllers/home_controller.dart';
 import 'package:flutter_map_app/models/parking_model.dart';
+import 'package:flutter_map_app/utils/permissions_manager.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rating_bar/rating_bar.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -15,17 +17,19 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   final homeController = HomeController();
+  Position _currentPosition = Position();
 
   Set<Marker> _markers = {};
   BitmapDescriptor mapMarker;
   Completer<GoogleMapController> _controller = Completer();
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
-      ItemPositionsListener.create();
+  ItemPositionsListener.create();
 
   @override
   void initState() {
     super.initState();
+    PermissionManager().determinePosition();
     _loadParkingLots();
     setCustomMarker();
   }
@@ -62,12 +66,53 @@ class _HomeViewState extends State<HomeView> {
           children: [
             _getGoogleMaps(context),
             _parkingLots(context),
-            _searchPlace()
+            _searchPlace(),
+            _contentButtons()
           ],
         );
         break;
       default:
     }
+  }
+
+  Widget _contentButtons() {
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Column(
+        children: [
+          button(_goCurrentPosition, Icons.location_searching),
+        ],
+      ),
+    );
+  }
+
+  _onAddMarker() {
+    setState(() {
+      _markers.add(
+        Marker(
+          markerId: MarkerId("current_location"),
+          position: LatLng(_currentPosition.latitude, _currentPosition.longitude),
+          infoWindow: InfoWindow(
+            title: 'Current Location',
+            snippet: 'Campos Sales',
+          ),
+          icon: BitmapDescriptor.defaultMarker,
+        ),
+      );
+    });
+  }
+
+  _goCurrentPosition() async {
+    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best,
+        forceAndroidLocationManager: true)
+        .then((Position position) =>
+    {
+      setState(() {
+        _currentPosition = position;
+        _gotoLocation(position.latitude, position.longitude);
+        _onAddMarker();
+      })
+    });
   }
 
   _loadParkingLots() {
@@ -78,7 +123,7 @@ class _HomeViewState extends State<HomeView> {
     homeController.parkingLots.forEach((parking) {
       _markers.add(
         Marker(
-            onTap: (){
+            onTap: () {
               _selectedItem(parking.id);
             },
             markerId: MarkerId(parking.id.toString()),
@@ -94,9 +139,22 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
+
+  Widget button(Function function, IconData icon) {
+    return FloatingActionButton(
+      onPressed: function,
+      materialTapTargetSize: MaterialTapTargetSize.padded,
+      backgroundColor: Colors.white,
+      child: Icon(
+        icon,
+        size: 32.0,
+      ),
+    );
+  }
+
   void setCustomMarker() async {
     BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(size: Size(48, 48)), 'assets/available.png')
+        ImageConfiguration(size: Size(48, 48)), 'assets/available.png')
         .then((onValue) {
       mapMarker = onValue;
     });
@@ -124,7 +182,7 @@ class _HomeViewState extends State<HomeView> {
 
   _selectedItem(int id) {
     var index =
-        homeController.parkingLots.indexWhere((element) => element.id == id);
+    homeController.parkingLots.indexWhere((element) => element.id == id);
     itemScrollController.scrollTo(
         index: index,
         duration: Duration(seconds: 2),
@@ -155,8 +213,14 @@ class _HomeViewState extends State<HomeView> {
 
   Widget _getGoogleMaps(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
+      height: MediaQuery
+          .of(context)
+          .size
+          .height,
+      width: MediaQuery
+          .of(context)
+          .size
+          .width,
       child: GoogleMap(
         onMapCreated: _onMapCreated,
         markers: _markers,
@@ -178,9 +242,10 @@ class _HomeViewState extends State<HomeView> {
         child: ScrollablePositionedList.builder(
           itemCount: homeController.parkingLots.length,
           scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) => _parkingBox(
-            homeController.parkingLots[index],
-          ),
+          itemBuilder: (context, index) =>
+              _parkingBox(
+                homeController.parkingLots[index],
+              ),
           itemScrollController: itemScrollController,
           itemPositionsListener: itemPositionsListener,
         ),
@@ -231,7 +296,7 @@ class _HomeViewState extends State<HomeView> {
                                   SizedBox(width: 5),
                                   Column(
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                           parking.address.street != null
@@ -242,7 +307,9 @@ class _HomeViewState extends State<HomeView> {
                                               fontSize: 16)),
                                       Text(
                                           parking.address.city != null
-                                              ? "${parking.address.city} - ${parking.address.state}, 69067-080"
+                                              ? "${parking.address
+                                              .city} - ${parking.address
+                                              .state}, 69067-080"
                                               : "----",
                                           style: TextStyle(
                                               color: Colors.black54,
