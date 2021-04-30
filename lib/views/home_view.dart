@@ -18,6 +18,7 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   final homeController = HomeController();
   Position _currentPosition = Position();
+  bool isShowContentParking = false;
 
   Set<Marker> _markers = {};
   BitmapDescriptor mapMarker;
@@ -65,7 +66,7 @@ class _HomeViewState extends State<HomeView> {
         return Stack(
           children: [
             _getGoogleMaps(context),
-            _parkingLots(context),
+              if (isShowContentParking) _parkingLots(context),
             _searchPlace(),
             _contentButtons()
           ],
@@ -100,8 +101,8 @@ class _HomeViewState extends State<HomeView> {
       _markers.add(
         Marker(
           markerId: MarkerId("current_location"),
-          position: LatLng(
-              _currentPosition.latitude, _currentPosition.longitude),
+          position:
+          LatLng(_currentPosition.latitude, _currentPosition.longitude),
           infoWindow: InfoWindow(
             title: 'Current Location',
             snippet: 'Campos Sales',
@@ -112,13 +113,11 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
-  _showListParking() {
-
-  }
-
+  _showListParking() {}
 
   _goCurrentPosition() async {
-    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best,
+    await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
         forceAndroidLocationManager: true)
         .then((Position position) =>
     {
@@ -139,6 +138,9 @@ class _HomeViewState extends State<HomeView> {
       _markers.add(
         Marker(
             onTap: () {
+                setState(() {
+                  isShowContentParking = true;
+                });
               _selectedItem(parking.id);
             },
             markerId: MarkerId(parking.id.toString()),
@@ -219,23 +221,27 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _searchPlace() {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: SearchMapPlaceWidget(
-        radius: 30000,
-        placeholder: "Digite o endereço",
-        apiKey: "AIzaSyCULCZ4hkchX9u0sggf5LCwZ2oOTAcM10s",
-        language: 'pt-BR',
-        placeType: PlaceType.address,
-        location: LatLng(-3.006669087006096, -60.036741948623686),
-        onSelected: (Place place) async {
-          final geolocation = await place.geolocation;
-          final GoogleMapController controller = await _controller.future;
-          controller
-              .animateCamera(CameraUpdate.newLatLng(geolocation.coordinates));
-          controller.animateCamera(
-              CameraUpdate.newLatLngBounds(geolocation.bounds, 0));
-        },
+    return Container(
+      color: Colors.amber,
+      height: 100,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: SearchMapPlaceWidget(
+          radius: 30000,
+          placeholder: "Digite o endereço",
+          apiKey: "AIzaSyCULCZ4hkchX9u0sggf5LCwZ2oOTAcM10s",
+          language: 'pt-BR',
+          placeType: PlaceType.address,
+          location: LatLng(-3.006669087006096, -60.036741948623686),
+          onSelected: (Place place) async {
+            final geolocation = await place.geolocation;
+            final GoogleMapController controller = await _controller.future;
+            controller
+                .animateCamera(CameraUpdate.newLatLng(geolocation.coordinates));
+            controller.animateCamera(
+                CameraUpdate.newLatLngBounds(geolocation.bounds, 0));
+          },
+        ),
       ),
     );
   }
@@ -251,6 +257,11 @@ class _HomeViewState extends State<HomeView> {
           .size
           .width,
       child: GoogleMap(
+       onTap: (LatLng latLng){
+         setState(() {
+           isShowContentParking = false;
+         });
+       },
         onMapCreated: _onMapCreated,
         markers: _markers,
         myLocationEnabled: true,
@@ -290,7 +301,7 @@ class _HomeViewState extends State<HomeView> {
         }
       },
       child: Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(3.0),
         child: Row(
           children: [
             SizedBox(width: 8.0),
