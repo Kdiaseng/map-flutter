@@ -78,10 +78,19 @@ class _HomeViewState extends State<HomeView> {
   Widget _contentButtons() {
     return Align(
       alignment: Alignment.bottomRight,
-      child: Column(
-        children: [
-          button(_goCurrentPosition, Icons.location_searching),
-        ],
+      child: Container(
+        height: 400,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              buttonListParking(_showListParking, Icons.list),
+              SizedBox(height: 15),
+              buttonCurrentLocate(_goCurrentPosition, Icons.my_location),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -91,7 +100,8 @@ class _HomeViewState extends State<HomeView> {
       _markers.add(
         Marker(
           markerId: MarkerId("current_location"),
-          position: LatLng(_currentPosition.latitude, _currentPosition.longitude),
+          position: LatLng(
+              _currentPosition.latitude, _currentPosition.longitude),
           infoWindow: InfoWindow(
             title: 'Current Location',
             snippet: 'Campos Sales',
@@ -101,6 +111,11 @@ class _HomeViewState extends State<HomeView> {
       );
     });
   }
+
+  _showListParking() {
+
+  }
+
 
   _goCurrentPosition() async {
     await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best,
@@ -139,15 +154,29 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
-
-  Widget button(Function function, IconData icon) {
+  Widget buttonListParking(Function function, IconData icon) {
     return FloatingActionButton(
       onPressed: function,
       materialTapTargetSize: MaterialTapTargetSize.padded,
       backgroundColor: Colors.white,
       child: Icon(
         icon,
+        color: Color(0xFF23CB7E),
         size: 32.0,
+      ),
+    );
+  }
+
+  Widget buttonCurrentLocate(Function function, IconData icon) {
+    return FloatingActionButton(
+      onPressed: function,
+      materialTapTargetSize: MaterialTapTargetSize.padded,
+      backgroundColor: Colors.white,
+      mini: true,
+      child: Icon(
+        icon,
+        color: Colors.black,
+        size: 24.0,
       ),
     );
   }
@@ -224,7 +253,7 @@ class _HomeViewState extends State<HomeView> {
       child: GoogleMap(
         onMapCreated: _onMapCreated,
         markers: _markers,
-        myLocationEnabled: false,
+        myLocationEnabled: true,
         myLocationButtonEnabled: true,
         zoomControlsEnabled: false,
         initialCameraPosition: CameraPosition(
