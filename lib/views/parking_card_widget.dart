@@ -39,7 +39,7 @@ class _ParkingCardWidgetState extends State<ParkingCardWidget> {
 
                   Container(
                     width: 350,
-                    height: 280,
+                    height: 285,
                   ),
 
                   Positioned(

@@ -285,10 +285,10 @@ class _HomeViewState extends State<HomeView> {
     return Visibility(
       visible: isShowContentParking,
       child: Align(
-        alignment: Alignment.bottomLeft,
+        alignment: Alignment.bottomCenter,
         child: Container(
+          height: 300,
           margin: EdgeInsets.symmetric(vertical: 20.0),
-          height: 200,
           child: ScrollablePositionedList.builder(
             itemCount: homeController.parkingLots.length,
             scrollDirection: Axis.horizontal,

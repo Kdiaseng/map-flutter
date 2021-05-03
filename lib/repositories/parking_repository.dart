@@ -4,7 +4,7 @@ import 'package:flutter_map_app/models/response_parking.dart';
 
 class ParkingRepository {
   final url =
-      "http://172.100.10.101:8362/ws-parking-driver/api/driver/pagination";
+      "http://172.100.10.102:8361/ws-parkingpass/api/parking/pagination";
 
   Future<List<ParkingModel>> getParkingLots() async {
     final response = await Dio().get(url);
