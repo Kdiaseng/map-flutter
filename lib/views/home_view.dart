@@ -75,7 +75,7 @@ class _HomeViewState extends State<HomeView> {
             _getGoogleMaps(context),
             _parkingLots(context),
             _searchPlace(),
-            _contentButtons()
+            _contentButtons(),
           ],
         );
         break;
@@ -107,7 +107,7 @@ class _HomeViewState extends State<HomeView> {
     if(mounted)setState(() {
       _markers.add(
         Marker(
-          markerId: MarkerId("current_location"),
+         markerId: MarkerId("current_location"),
           position:
               LatLng(_currentPosition.latitude, _currentPosition.longitude),
           infoWindow: InfoWindow(
