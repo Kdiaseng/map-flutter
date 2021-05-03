@@ -22,6 +22,7 @@ class _HomeViewState extends State<HomeView> {
 
   Set<Marker> _markers = {};
   BitmapDescriptor mapMarker;
+  BitmapDescriptor driverMarker;
   Completer<GoogleMapController> _controller = Completer();
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener =
@@ -40,7 +41,13 @@ class _HomeViewState extends State<HomeView> {
   }
 
   _loading() {
-    return Center(child: CircularProgressIndicator());
+    return Center(
+        child: CircularProgressIndicator(
+          backgroundColor: Color(0xFF23CB7E),
+          valueColor: new AlwaysStoppedAnimation(Colors.black26),
+          strokeWidth: 5,
+        )
+    );
   }
 
   _error() {
@@ -107,7 +114,7 @@ class _HomeViewState extends State<HomeView> {
             title: 'Current Location',
             snippet: 'Campos Sales',
           ),
-          icon: BitmapDescriptor.defaultMarker,
+          icon: driverMarker,
         ),
       );
     });
@@ -138,7 +145,7 @@ class _HomeViewState extends State<HomeView> {
         Marker(
             onTap: () {
               _showOrHideContentParking(true);
-              // _selectedItem(parking.id);
+              _selectedItem(parking.id);
             },
             markerId: MarkerId(parking.id.toString()),
             position: LatLng(
@@ -189,6 +196,13 @@ class _HomeViewState extends State<HomeView> {
   }
 
   void setCustomMarker() async {
+
+    BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(size: Size(48, 48)), 'assets/driver_marker.png')
+        .then((onValue) {
+      driverMarker = onValue;
+    });
+
     BitmapDescriptor.fromAssetImage(
             ImageConfiguration(size: Size(48, 48)), 'assets/available.png')
         .then((onValue) {
@@ -232,10 +246,9 @@ class _HomeViewState extends State<HomeView> {
       alignment: Alignment.topCenter,
       child: SearchMapPlaceWidget(
         radius: 30000,
-        placeholder: "Digite o endereço",
+        placeholder: "Busque um lugar ou endereço",
         apiKey: "AIzaSyCULCZ4hkchX9u0sggf5LCwZ2oOTAcM10s",
         language: 'pt-BR',
-        placeType: PlaceType.address,
         location: LatLng(-3.006669087006096, -60.036741948623686),
         onSelected: (Place place) async {
           final geolocation = await place.geolocation;
