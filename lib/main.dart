@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map_app/views/teste_card_parking.dart';
 
 import 'views/home_view.dart';
 
@@ -13,7 +14,7 @@ class AppWidget extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: HomeView(),
+      home: TestCardParking(),
     );
   }
 }
